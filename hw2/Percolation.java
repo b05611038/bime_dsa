@@ -104,11 +104,7 @@ public class Percolation {
         row = row - 1;
         col = col - 1;
 
-        if (UF.connected(0, (row * num + col + 1))) {
-            return true;
-        } else {
-            return false;
-        }
+        return UF.connected(0, (row * num + col + 1));
     }
 
     public int numberOfOpenSites() {
