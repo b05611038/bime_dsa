@@ -5,14 +5,23 @@ import java.io.*;
 public class CentroidClustering {
     private int size;
     private ArrayList<ClusterPair> clusterPairs = new ArrayList<ClusterPair>();
+    private List<List<Double>> distanceTable = new ArrayList<List<Double>>();
 
     public CentroidClustering(ClusterPair[] inputPair) {
         //structure, assign the variable we want
         int n = inputPair.length;
         for (int i = 0; i < n; i++) {
-            clusterPairs.add(inputPair[i]);
+            this.clusterPairs.add(inputPair[i]);
+            this.distanceTable.add(new ArrayList<Double>());
         }
         this.size = this.clusterPairs.size();
+
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                //calculate all diatances and save it into table
+                this.distanceTable.get(i).add(this.clusterPairs.get(i).distanceTo(this.clusterPairs.get(j)));
+            }
+        }
     }
 
     //data structure of clustering pair
@@ -74,32 +83,44 @@ public class CentroidClustering {
 
         while (this.size > stopFlag) {
             //the processs of reduce cluster pair
-            double currentDistance;
             int minDistanceI = -1;
             int minDistanceJ = -1;
             double minDistance = Double.POSITIVE_INFINITY;
-            for (int i = 0; i < this.size; i++) {
-                for (int j = i + 1; j < this.size; j++) {
+            for (int i = 0; i < this.distanceTable.size(); i++) {
+                for (int j = 0; j < this.distanceTable.get(i).size(); j++) {
                     //get all the distance of all pair
-                    currentDistance = this.clusterPairs.get(i).distanceTo(this.clusterPairs.get(j));
-
-                    if (currentDistance < minDistance) {
+                    if (distanceTable.get(i).get(j) < minDistance) {
                         minDistanceI = i;
-                        minDistanceJ = j;
-                        minDistance = currentDistance;
+                        minDistanceJ = j + i + 1;
+                        minDistance = this.distanceTable.get(i).get(j);
                     }
                 }
             }
 
             int mergeNum = this.clusterPairs.get(minDistanceI).getN() + this.clusterPairs.get(minDistanceJ).getN();
-            double mergeX = (this.clusterPairs.get(minDistanceI).getX() * clusterPairs.get(minDistanceI).getN() + this.clusterPairs.get(minDistanceJ).getX() * clusterPairs.get(minDistanceJ).getN()) / mergeNum;
-            double mergeY = (this.clusterPairs.get(minDistanceI).getY() * clusterPairs.get(minDistanceI).getN() + this.clusterPairs.get(minDistanceJ).getY() * this.clusterPairs.get(minDistanceJ).getN()) / mergeNum;
+            double mergeX = (this.clusterPairs.get(minDistanceI).getX() * this.clusterPairs.get(minDistanceI).getN() + this.clusterPairs.get(minDistanceJ).getX() * this.clusterPairs.get(minDistanceJ).getN()) / mergeNum;
+            double mergeY = (this.clusterPairs.get(minDistanceI).getY() * this.clusterPairs.get(minDistanceI).getN() + this.clusterPairs.get(minDistanceJ).getY() * this.clusterPairs.get(minDistanceJ).getN()) / mergeNum;
 
             ClusterPair newPair = new ClusterPair(mergeX, mergeY, mergeNum);
 
+            //remove the old pair in formation from memory
+            for (int i = 0; i < minDistanceJ; i++) {
+                this.distanceTable.get(i).remove(minDistanceJ - i - 1);
+            }
+            this.distanceTable.remove(minDistanceJ);
+            for (int i = 0; i < minDistanceI; i++) {
+                this.distanceTable.get(i).remove(minDistanceI - i - 1);
+            }
+            this.distanceTable.remove(minDistanceI);
             this.clusterPairs.remove(minDistanceJ);
             this.clusterPairs.remove(minDistanceI);
+
+            //update new pair distance
             this.clusterPairs.add(newPair);
+            this.distanceTable.add(new ArrayList<Double>());
+            for (int i = 0; i < (this.distanceTable.size() - 1); i++) {
+                distanceTable.get(i).add(this.clusterPairs.get(i).distanceTo(this.clusterPairs.get(this.clusterPairs.size() - 1)));
+            }
 
             this.size = clusterPairs.size();
         }
@@ -119,7 +140,7 @@ public class CentroidClustering {
             String lines = br.readLine();
             // store the first integer in variable readCount (number of reads)
 
-            int readCount =  Integer.parseInt(lines);
+            int readCount = Integer.parseInt(lines);
             String[] readsArray = new String[readCount];
             for (int i = 0; i < readCount; i++) {
                 readsArray[i] = (String) br.readLine();
