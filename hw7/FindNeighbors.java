@@ -4,12 +4,15 @@ import edu.princeton.cs.algs4.*;
 public class FindNeighbors{
     //depth % 2 = 0, compare x axis, depth % 2 = 1, compare y axis
     private final int dim = 2;
+    private Point2D[] points;
     private NDTreeNode root = null;
     private PriorityQueue<QueryPair> queryPriority = new PriorityQueue<QueryPair>();
 
     public void init(Point2D[] points){
         //initial of building 2-dimensional tree
-        this.root = buildTree(this.root, points);
+        this.points = points;
+        //this.root = buildTree(this.root, points);
+        
     }
     public NDTreeNode buildTree(NDTreeNode root, Point2D[] points) {
         //resursive function of bulding 2-dimensional tree
@@ -70,8 +73,21 @@ public class FindNeighbors{
         }
     }
 
-    
-    public Point2D[] query(Point2D point, int k){
+    public Point2D[] query(Point2D point, int k) {
+        Point2D[] result = new Point2D[k];
+
+        for (int i = 0; i < this.points.length; i++) {
+            queryPriority.add(new QueryPair(this.points[i] ,this.points[i].distanceTo(point)));
+        }
+
+        for (int i = 0; i < k; i++) {
+            result[i] = this.queryPriority.remove().getPoint();
+        }
+
+        return result;
+    }
+/*
+    public Point2D[] query(Point2D point, int k) {
         //return the query of the n th minimum distance points
         Point2D[] result = new Point2D[k];
 
@@ -117,7 +133,7 @@ public class FindNeighbors{
             }
         }
     }
-
+*/
     public class QueryPair implements Comparable<QueryPair> {
         private final Point2D point;
         private final double distance;
@@ -152,7 +168,7 @@ public class FindNeighbors{
         }
     }
     
-
+/*
     public static void main(String[] args) {
         Point2D[] points = new Point2D[5];
         points[0] = new Point2D(3, 2);
@@ -170,4 +186,5 @@ public class FindNeighbors{
             System.out.println(test[i].toString());
         }
     }
+*/
 }
