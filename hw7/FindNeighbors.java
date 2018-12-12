@@ -74,15 +74,10 @@ public class FindNeighbors{
     }
 
     public Point2D[] query(Point2D point, int k) {
-        Point2D[] result = new Point2D[k];
+        Point2D[] result;
 
-        for (int i = 0; i < this.points.length; i++) {
-            queryPriority.add(new QueryPair(this.points[i] ,this.points[i].distanceTo(point)));
-        }
-
-        for (int i = 0; i < k; i++) {
-            result[i] = this.queryPriority.remove().getPoint();
-        }
+        Arrays.sort(this.points, point.distanceToOrder());
+        result = Arrays.copyOf(this.points, k);
 
         return result;
     }
@@ -166,8 +161,7 @@ public class FindNeighbors{
                 return inMemory.compareTo(outMemory);
             }
         }
-    }
-    
+    }    
 /*
     public static void main(String[] args) {
         Point2D[] points = new Point2D[5];
